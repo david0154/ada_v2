@@ -19,10 +19,10 @@ from pathlib import Path
 
 
 
-# Ensure we can import ada
+# Ensure we can import jarvis
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-import ada
+import jarvis
 from authenticator import FaceAuthenticator
 from kasa_agent import KasaAgent
 
@@ -238,7 +238,7 @@ async def start_audio(sid, data=None):
     # Callback to send CAD status to frontend
     def on_cad_status(status):
         # status can be: 
-        # - a string like "generating" (from ada.py handle_cad_request)
+        # - a string like "generating" (from jarvis.py handle_cad_request)
         # - a dict with {status, attempt, max_attempts, error} (from CadAgent)
         if isinstance(status, dict):
             print(f"Sending CAD Status: {status.get('status')} (attempt {status.get('attempt')}/{status.get('max_attempts')})")
@@ -268,10 +268,10 @@ async def start_audio(sid, data=None):
         print(f"Sending Error to frontend: {msg}")
         asyncio.create_task(sio.emit('error', {'msg': msg}))
 
-    # Initialize ADA
+    # Initialize Jarvis
     try:
         print(f"Initializing AudioLoop with device_index={device_index}")
-        audio_loop = ada.AudioLoop(
+        audio_loop = jarvis.AudioLoop(
             video_mode="none", 
             on_audio_data=on_audio_data,
             on_cad_data=on_cad_data,
@@ -338,6 +338,35 @@ async def start_audio(sid, data=None):
         traceback.print_exc()
         await sio.emit('error', {'msg': f"Failed to start: {str(e)}"})
         audio_loop = None # Ensure we can try again
+
+@sio.event
+async def set_barge_in_prevention(sid, data=None):
+    """Enable or disable barge-in prevention (mute mic while ADA speaks)
+    
+    Args:
+        data: dict with 'enabled' (bool) and optional 'threshold' (int, default 2000)
+              Lower threshold = more sensitive to interruptions
+              Higher threshold = requires louder interruptions
+    """
+    global audio_loop
+    
+    if not audio_loop:
+        print("[SERVER] [ERROR] Audio loop not running")
+        return
+    
+    try:
+        enabled = data.get('enabled', True) if data else True
+        threshold = data.get('threshold', 2000) if data else 2000
+        
+        audio_loop.set_barge_in_prevention(enabled, threshold)
+        
+        status_msg = f"Barge-in prevention {'enabled' if enabled else 'disabled'} (threshold: {threshold})"
+        await sio.emit('status', {'msg': status_msg})
+        print(f"[SERVER] {status_msg}")
+        
+    except Exception as e:
+        print(f"[SERVER] [ERROR] Failed to set barge-in prevention: {e}")
+        await sio.emit('error', {'msg': f"Failed to update audio settings: {str(e)}"})
 
 
 async def monitor_printers_loop():

@@ -188,7 +188,7 @@ config = types.LiveConnectConfig(
     # We switch these from [] to {} to enable them with default settings
     output_audio_transcription={}, 
     input_audio_transcription={},
-    system_instruction="Your name is Ada, which stands for Advanced Design Assistant. "
+    system_instruction="Your name is Jarvis, which stands for Advanced Design Assistant. "
         "You have a witty and charming personality. "
         "Your creator is Naz, and you address him as 'Sir'. "
         "When answering, respond using complete and concise sentences to keep a quick pacing and keep the conversation flowing. "
@@ -273,20 +273,20 @@ class AudioLoop:
         self._silence_start_time = None
         
         # Barge-in Prevention State
-        self._is_ada_speaking = False  # Track if ADA is currently outputting audio
-        self._ada_speech_timer = None  # Timer to detect when ADA stops speaking
-        self._mute_during_ada_speech = True  # Default: mute mic when ADA speaks
+        self._is_ada_speaking = False  # Track if JARVIS is currently outputting audio
+        self._ada_speech_timer = None  # Timer to detect when JARVIS stops speaking
+        self._mute_during_ada_speech = True  # Default: mute mic when JARVIS speaks
         self._barge_in_threshold = 5000  # RMS threshold for allowing interruptions (higher = quieter interruptions blocked)
         self._normal_vad_threshold = 800  # Normal VAD threshold for user speech detection
-        self._mute_buffer_duration = 1.0  # Seconds to fully mute after ADA starts speaking (prevent loopback)
-        self._ada_speech_start_time = None  # Track when ADA started speaking for mute buffer
+        self._mute_buffer_duration = 1.0  # Seconds to fully mute after JARVIS starts speaking (prevent loopback)
+        self._ada_speech_start_time = None  # Track when JARVIS started speaking for mute buffer
         
         # Initialize ProjectManager
         from project_manager import ProjectManager
         # Assuming we are running from backend/ or root? 
         # Using abspath of current file to find root
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        # If ada.py is in backend/, project root is one up
+        # If jarvis.py is in backend/, project root is one up
         project_root = os.path.dirname(current_dir)
         self.project_manager = ProjectManager(project_root)
         
@@ -314,10 +314,10 @@ class AudioLoop:
         self.paused = paused
 
     def set_barge_in_prevention(self, enabled, barge_in_threshold=2000):
-        """Enable or disable barge-in prevention (mute mic while ADA speaks)
+        """Enable or disable barge-in prevention (mute mic while JARVIS speaks)
         
         Args:
-            enabled: If True, mutes microphone when ADA is speaking
+            enabled: If True, mutes microphone when JARVIS is speaking
             barge_in_threshold: RMS threshold for allowing interruptions (default: 2000)
                                Lower = more sensitive to interruptions
                                Higher = requires louder interruptions
@@ -454,12 +454,12 @@ class AudioLoop:
                     rms = 0
                 
                 # Barge-in Prevention Logic
-                # Always mute when ADA is speaking, with a brief buffer period to prevent loopback
+                # Always mute when JARVIS is speaking, with a brief buffer period to prevent loopback
                 if self._is_ada_speaking and self._mute_during_ada_speech:
                     # Check if we're still in the mute buffer period
                     if self._ada_speech_start_time and (time.time() - self._ada_speech_start_time) < self._mute_buffer_duration:
                         # Within mute buffer - block ALL audio (no interruptions allowed yet)
-                        # This prevents ADA's voice from being picked up by the mic
+                        # This prevents JARVIS's voice from being picked up by the mic
                         continue
                     
                     # After mute buffer - only allow VERY loud interruptions
@@ -1173,20 +1173,20 @@ class AudioLoop:
             output_device_index=self.output_device_index,
         )
         
-        # Track when ADA stops speaking (0.5 second timeout)
+        # Track when JARVIS stops speaking (0.5 second timeout)
         self._ada_speech_timer = None
         
-        # Track when ADA started speaking (for mute buffer)
+        # Track when JARVIS started speaking (for mute buffer)
         self._ada_speech_start_time = None
         
         while True:
             bytestream = await self.audio_in_queue.get()
             
-            # Mark that ADA is speaking
+            # Mark that JARVIS is speaking
             if not self._is_ada_speaking:
                 self._is_ada_speaking = True
                 self._ada_speech_start_time = time.time()
-                print(f"[ADA DEBUG] [AUDIO] ADA started speaking at {self._ada_speech_start_time}")
+                print(f"[ADA DEBUG] [AUDIO] JARVIS started speaking at {self._ada_speech_start_time}")
             
             # Cancel any existing timer
             if self._ada_speech_timer:
@@ -1198,14 +1198,14 @@ class AudioLoop:
             
             await asyncio.to_thread(stream.write, bytestream)
             
-            # Set a timer to mark ADA as done speaking after 0.5 seconds of silence
+            # Set a timer to mark JARVIS as done speaking after 0.5 seconds of silence
             async def mark_ada_finished():
                 await asyncio.sleep(0.5)
                 if self._is_ada_speaking:  # Check if still true
                     self._is_ada_speaking = False
                     self._ada_speech_start_time = None
                     self._ada_speech_timer = None
-                    print("[ADA DEBUG] [AUDIO] ADA finished speaking")
+                    print("[ADA DEBUG] [AUDIO] JARVIS finished speaking")
             
             self._ada_speech_timer = asyncio.create_task(mark_ada_finished())
 
