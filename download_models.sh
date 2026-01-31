@@ -1,1 +1,52 @@
-#!/bin/bash\n\necho "===========================================" \necho "Dayna AI - Offline Model Downloader"\necho "===========================================" \necho ""\n\nmkdir -p backend/models\ncd backend/models\n\n# Mistral-7B-Instruct GGUF (4.1GB)\nif [ -f "mistral-7b-instruct-v0.2.Q4_K_M.gguf" ]; then\n  echo "[SKIP] Mistral-7B already downloaded"\nelse\n  echo "[1/4] Downloading Mistral-7B-Instruct (4.1GB)..."\n  wget -q --show-progress https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf\n  echo "✅ Mistral-7B downloaded"\nfi\n\n# Hindi TTS (Pratham Male Voice)\nif [ -f "hi_IN-pratham-medium.onnx" ]; then\n  echo "[SKIP] Hindi voice already downloaded"\nelse\n  echo "[2/4] Downloading Hindi TTS (Pratham)..."\n  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/pratham/medium/hi_IN-pratham-medium.onnx\n  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/pratham/medium/hi_IN-pratham-medium.onnx.json\n  echo "✅ Hindi voice downloaded"\nfi\n\n# English TTS (Lessac Female Voice)\nif [ -f "en_US-lessac-medium.onnx" ]; then\n  echo "[SKIP] English voice already downloaded"\nelse\n  echo "[3/4] Downloading English TTS (Lessac)..."\n  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx\n  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json\n  echo "✅ English voice downloaded"\nfi\n\necho ""\necho "==========================================="\necho "✅ All models downloaded successfully!"\necho "==========================================="\necho "Total size: ~4.3GB"\necho ""\necho "Models installed:"\necho "  - Mistral-7B-Instruct (LLM)"\necho "  - Whisper Base (STT)"\necho "  - Piper Hindi (TTS)"\necho "  - Piper English (TTS)"\necho ""\necho "Run: python backend/dayna.py --mode offline"\n
+#!/bin/bash
+
+echo "==========================================="
+echo "Dayna AI - Offline Model Downloader"
+echo "==========================================="
+echo ""
+
+mkdir -p backend/models
+cd backend/models
+
+# Mistral-7B-Instruct GGUF (4.1GB)
+if [ -f "mistral-7b-instruct-v0.2.Q4_K_M.gguf" ]; then
+  echo "[SKIP] Mistral-7B already downloaded"
+else
+  echo "[1/4] Downloading Mistral-7B-Instruct (4.1GB)..."
+  wget -q --show-progress https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf
+  echo "✅ Mistral-7B downloaded"
+fi
+
+# Hindi TTS (Pratham Male Voice)
+if [ -f "hi_IN-pratham-medium.onnx" ]; then
+  echo "[SKIP] Hindi voice already downloaded"
+else
+  echo "[2/4] Downloading Hindi TTS (Pratham)..."
+  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/pratham/medium/hi_IN-pratham-medium.onnx
+  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/hi/hi_IN/pratham/medium/hi_IN-pratham-medium.onnx.json
+  echo "✅ Hindi voice downloaded"
+fi
+
+# English TTS (Lessac Female Voice)
+if [ -f "en_US-lessac-medium.onnx" ]; then
+  echo "[SKIP] English voice already downloaded"
+else
+  echo "[3/4] Downloading English TTS (Lessac)..."
+  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+  wget -q --show-progress https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+  echo "✅ English voice downloaded"
+fi
+
+echo ""
+echo "==========================================="
+echo "✅ All models downloaded successfully!"
+echo "==========================================="
+echo "Total size: ~4.3GB"
+echo ""
+echo "Models installed:"
+echo "  - Mistral-7B-Instruct (LLM)"
+echo "  - Whisper Base (STT)"
+echo "  - Piper Hindi (TTS)"
+echo "  - Piper English (TTS)"
+echo ""
+echo "Run: python backend/offline_agent.py"
